@@ -1,11 +1,10 @@
 import { Link } from "@heroui/link";
+import { button as buttonStyles } from "@heroui/theme";
 
 import { Head } from "./head";
 
-import { Navbar } from "@/components/navbar";
 import { siteConfig } from "@/config/site";
-import { button as buttonStyles } from "@heroui/theme";
-
+import { Navbar } from "@/components/navbar";
 import { GithubIcon } from "@/components/icons";
 
 export default function DefaultLayout({

@@ -1,12 +1,11 @@
 import { Link } from "@heroui/link";
+import { button as buttonStyles } from "@heroui/theme";
 
 import { Head } from "./head";
 
 import { Navbar } from "@/components/navbar";
-import { siteConfig } from "@/config/site";
-import { button as buttonStyles } from "@heroui/theme";
-
 import { GithubIcon } from "@/components/icons";
+import { siteConfig } from "@/config/site";
 
 export default function EditorLayout({
   children,

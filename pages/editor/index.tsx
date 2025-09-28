@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
-import EditorLayout from "@/layouts/editor";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import EditorLayout from "@/layouts/editor";
 
 export default function Editor() {
   const [artistName, setArtistName] = useState("Artist name");
@@ -46,6 +47,7 @@ export default function Editor() {
 
     // Update preview
     const pdfDataUri = doc.output("datauristring");
+
     pdfDocRef.current = doc;
     setImageUrl(pdfDataUri);
   };
@@ -62,6 +64,7 @@ export default function Editor() {
 
   const hexToRgb = (hex: string): [number, number, number] => {
     const bigint = parseInt(hex.slice(1), 16);
+
     return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
   };
 
@@ -72,29 +75,35 @@ export default function Editor() {
           <CardContent className="flex flex-col gap-4 p-4">
             <Input
               value={artistName}
-              onChange={(e) => setArtistName(e.target.value)}
               placeholder="Artist Name"
+              onChange={(e) => setArtistName(e.target.value)}
             />
             <Input
               value={albumTitle}
-              onChange={(e) => setAlbumTitle(e.target.value)}
               placeholder="Album Title"
+              onChange={(e) => setAlbumTitle(e.target.value)}
             />
-            <label className="text-sm font-medium">Font Size</label>
+            <label className="text-sm font-medium" htmlFor="fontSize">
+              Font Size
+            </label>
             <Slider
               min={20}
               max={100}
               value={[fontSize]}
               onValueChange={(val) => setFontSize(val[0])}
             />
-            <label className="text-sm font-medium">Border Size</label>
+            <label className="text-sm font-medium" htmlFor="borderSize">
+              Border Size
+            </label>
             <Slider
               min={0}
               max={100}
               value={[border]}
               onValueChange={(val) => setBorder(val[0])}
             />
-            <label className="text-sm font-medium">Background Color</label>
+            <label className="text-sm font-medium" htmlFor="backgroundColor">
+              Background Color
+            </label>
             <Input
               type="color"
               value={bgColor}

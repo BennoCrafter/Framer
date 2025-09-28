@@ -5,7 +5,7 @@
 <div align="center">
     <h1>Framer</h1>
 
-  **Transform your favorite albums into stunning posters—perfect for upgrading your room.**
+  **Transform your favourite albums, movies & series into stunning posters—perfect for upgrading your room.**
 </div>
 
 ## 🔭 **Overview**

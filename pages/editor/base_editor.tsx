@@ -4,6 +4,21 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import EditorLayout from "@/layouts/editor";
 import { ConfigSchema, ConfigValues } from "@/pages/editor/types";
+import {
+  Choicebox,
+  ChoiceboxItem,
+  ChoiceboxItemContent,
+  ChoiceboxItemDescription,
+  ChoiceboxItemHeader,
+  ChoiceboxItemIndicator,
+  ChoiceboxItemSubtitle,
+  ChoiceboxItemTitle,
+} from "@/components/ui/choicebox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type BaseEditorProps<T extends ConfigSchema> = {
   configSchema: T;
@@ -81,6 +96,59 @@ export function BaseEditor<T extends ConfigSchema>({
                         )
                       }
                     />
+                  </div>
+                );
+              }
+
+              if (c.type === "choice") {
+                return (
+                  <div key={c.key} className="flex flex-col gap-2">
+                    <label className="text-sm font-medium">{c.label}</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button className="w-full text-left">
+                          {(config as any)[c.key]
+                            ? c.options.find(
+                                (o) => o.id === (config as any)[c.key],
+                              )?.label
+                            : "Select..."}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-2">
+                        <Choicebox
+                          value={(config as any)[c.key]}
+                          style={
+                            c.inline
+                              ? {
+                                  gridTemplateColumns: `repeat(${c.options.length}, 1fr)`,
+                                }
+                              : undefined
+                          }
+                          onValueChange={(val) =>
+                            updateConfig(
+                              c.key,
+                              val as ConfigValues<T>[keyof ConfigValues<T>],
+                            )
+                          }
+                        >
+                          {c.options.map((option) => (
+                            <ChoiceboxItem key={option.id} value={option.id}>
+                              <ChoiceboxItemHeader>
+                                <ChoiceboxItemTitle>
+                                  {option.label}
+                                </ChoiceboxItemTitle>
+                                <ChoiceboxItemDescription>
+                                  {option.description}
+                                </ChoiceboxItemDescription>
+                              </ChoiceboxItemHeader>
+                              <ChoiceboxItemContent>
+                                <ChoiceboxItemIndicator />
+                              </ChoiceboxItemContent>
+                            </ChoiceboxItem>
+                          ))}
+                        </Choicebox>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 );
               }

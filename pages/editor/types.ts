@@ -21,7 +21,19 @@ export interface SliderField extends BaseField<number> {
   max: number;
 }
 
-export type ConfigField = TextField | ColorField | SliderField;
+export interface ChoiceField extends BaseField<string> {
+  type: "choice";
+  options: ChoiceOption[];
+  inline?: boolean;
+}
+
+interface ChoiceOption {
+  id: string;
+  label: string;
+  description?: string;
+}
+
+export type ConfigField = TextField | ColorField | SliderField | ChoiceField;
 export type ConfigSchema = ConfigField[];
 
 // ---------- Values derived from schema ----------

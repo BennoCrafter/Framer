@@ -37,13 +37,6 @@ export const albumConfigSchema = [
   },
 ] as const satisfies ConfigSchema;
 
-export type AlbumConfig = ConfigValues<typeof albumConfigSchema>;
-
-export const albumConfigScheme = {
-  schema: albumConfigSchema,
-  default: buildDefaults(albumConfigSchema),
-};
-
 export const movieConfigSchema = [
   {
     key: "outerMargin",
@@ -53,4 +46,37 @@ export const movieConfigSchema = [
     max: 100,
     default: 10,
   },
+  {
+    key: "posterOrientation",
+    label: "Poster Orientation",
+    type: "choice",
+    options: [
+      {
+        id: "landscape",
+        label: "Landscape",
+        description: "Landscape orientation",
+      },
+      {
+        id: "portrait",
+        label: "Portrait",
+        description: "Portrait orientation",
+      },
+    ],
+    inline: false,
+    default: "portrait",
+  },
 ] as const satisfies ConfigSchema;
+
+export type AlbumConfig = ConfigValues<typeof albumConfigSchema>;
+
+export const albumConfigScheme = {
+  schema: albumConfigSchema,
+  default: buildDefaults(albumConfigSchema),
+};
+
+export type MovieConfig = ConfigValues<typeof movieConfigSchema>;
+
+export const movieConfigScheme = {
+  schema: movieConfigSchema,
+  default: buildDefaults(movieConfigSchema),
+};

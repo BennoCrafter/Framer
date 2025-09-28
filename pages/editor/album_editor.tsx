@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
 
 import { ConfigValue } from "@/pages/editor/types";
-import { albumConfigSchema } from "@/pages/editor/schema";
+import {
+  albumConfigSchema,
+  AlbumConfig,
+  albumConfigScheme,
+} from "@/pages/editor/schema";
 import artistsToString, { Album, Track, Artist } from "@/music_api/types";
 import { fetchAccessToken } from "@/music_api/fetchAccessToken";
 import fetchAlbumInfo from "@/music_api/fetchAlbumInfo";
@@ -10,9 +14,10 @@ import { BaseEditor } from "./base_editor";
 import { hexToRgb } from "@/lib/utils";
 
 export function AlbumEditor({ albumId }: { albumId: string }) {
-  const [config, setConfig] = useState<Record<string, ConfigValue>>(
-    Object.fromEntries(albumConfigSchema.map((c) => [c.key, c.default])),
-  );
+  const [config, setConfig] = useState<AlbumConfig>({
+    ...albumConfigScheme.default,
+  });
+
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,15 +31,23 @@ export function AlbumEditor({ albumId }: { albumId: string }) {
 
       fetchAlbumInfo(accessToken, albumId, setLoading).then((data) => {
         if (!data) return;
-        console.log(data.name);
+
+        setConfig((prevConfig) => ({
+          ...prevConfig,
+          albumName: data.name as string,
+          artistName: artistsToString(data.artists) as string,
+        }));
       });
     };
 
     fetchData();
   }, [albumId]);
 
-  const updateConfig = (key: string, value: ConfigValue) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
+  const updateConfig = (key: keyof AlbumConfig, value: ConfigValue) => {
+    setConfig((prevConfig) => ({
+      ...prevConfig,
+      [key]: value,
+    }));
   };
 
   const generatePdf = () => {
@@ -67,7 +80,7 @@ export function AlbumEditor({ albumId }: { albumId: string }) {
     );
 
     doc.setFontSize((config.fontSize as number) * 0.6);
-    doc.text(config.albumTitle as string, pageWidth / 2, pageHeight / 2, {
+    doc.text(config.albumName as string, pageWidth / 2, pageHeight / 2, {
       align: "center",
     });
 

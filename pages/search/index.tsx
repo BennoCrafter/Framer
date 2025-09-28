@@ -1,11 +1,10 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { Film, Music } from "lucide-react";
+
 import DefaultLayout from "@/layouts/default";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Film, Music } from "lucide-react";
 import { title } from "@/components/primitives";
 import fetchAlbums from "@/music_api/fetchAlbums";
 import { fetchAccessToken } from "@/music_api/fetchAccessToken";
@@ -44,7 +43,7 @@ export default function Search() {
 
         {type === "movie" ? (
           <SearchMovies />
-        ) : type === "music" ? (
+        ) : type === "album" ? (
           <SearchMusic />
         ) : (
           <WrongSearch />
@@ -66,35 +65,79 @@ function SearchMusic() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<AlbumSearchItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [nextLoadingLink, setNextLoadingLink] = useState<
+    URL | null | undefined
+  >(undefined);
 
-  const handleSearch = async () => {
-    if (!query) return;
-
+  const handleSearch = async (loadMore: boolean) => {
     const token = await fetchAccessToken();
 
     if (!token) return;
+    console.log(loadMore);
+    if (!loadMore) {
+      setNextLoadingLink(null);
+    }
 
     await fetchAlbums(
       token,
       query,
-      20,
-      0,
-      (albumsSearch) => setResults(albumsSearch.items),
+      21,
+      nextLoadingLink,
+      loadMore,
+      (albumsSearch) => {
+        if (loadMore) {
+          setResults((prevAlbums) => {
+            return [...prevAlbums, ...albumsSearch.items];
+          });
+        } else {
+          setResults(albumsSearch.items);
+        }
+        setNextLoadingLink(albumsSearch.next);
+      },
       setLoading,
-      () => {},
     );
   };
+
+  useEffect(() => {
+    const fetchInitialAlbumResults = async () => {
+      const accessToken = await fetchAccessToken();
+
+      if (!accessToken) return;
+
+      await fetchAlbums(
+        accessToken,
+        query,
+        21,
+        nextLoadingLink,
+        false,
+        (albumsSearch) => {
+          setResults(albumsSearch.items);
+          setNextLoadingLink(albumsSearch.next);
+        },
+        setLoading,
+      );
+    };
+
+    fetchInitialAlbumResults();
+  }, []);
 
   return (
     <>
       <SearchBar
         query={query}
         setQuery={setQuery}
-        handleSearch={handleSearch}
+        handleSearch={() => handleSearch(false)}
         loading={loading}
         placeholder="Search for albums..."
       />
-      <SearchAlbumsResultGrid results={results} />
+      <ResultGrid results={results} />
+      <button
+        disabled={loading || nextLoadingLink === null}
+        className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition"
+        onClick={() => handleSearch(true)}
+      >
+        {loading ? "Loading..." : "Load More"}
+      </button>
     </>
   );
 }
@@ -120,12 +163,26 @@ function SearchMovies() {
         loading={loading}
         placeholder="Search for movies..."
       />
-      <SearchMoviesResultGrid results={results} />
+      <ResultGrid results={results} />
     </>
   );
 }
 
-function SearchAlbumsResultGrid({ results }: { results: AlbumSearchItem[] }) {
+function ResultGrid({ results }: { results: AlbumSearchItem[] }) {
+  return results.length === 0 ? (
+    <div className="flex justify-center items-center h-96">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-gray-500" />
+    </div>
+  ) : (
+    <div className="flex flex-col items-center gap-6">
+      <div className="grid w-full max-w-6xl grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {renderAlbumsResultsGrid({ results })}
+      </div>
+    </div>
+  );
+}
+
+function renderAlbumsResultsGrid({ results }: { results: AlbumSearchItem[] }) {
   function albumSearchItemToSearchResultCardData(
     album: AlbumSearchItem,
   ): SearchResultCardData {
@@ -138,38 +195,22 @@ function SearchAlbumsResultGrid({ results }: { results: AlbumSearchItem[] }) {
   }
 
   return (
-    <div className="grid w-full max-w-6xl grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+    <>
       {results.map((item) => {
         const cardData = albumSearchItemToSearchResultCardData(item);
 
         return (
           <a
             key={item.id}
-            href={`/editor?type=music&albumId=${item.id}`}
+            href={`/editor?type=album&albumId=${item.id}`}
             className="group"
           >
             <SearchResultCard item={cardData} />
           </a>
         );
       })}
-    </div>
+    </>
   );
-}
-
-function SearchMoviesResultGrid({ results }: { results: any[] }) {
-  return <></>;
-
-  // return (
-  //   <div className="grid w-full max-w-6xl grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-  //     {results.map((item) => {
-  //       return (
-  //         <a key={item.id} href="/editor" className="group">
-  //           <SearchResultCard item={cardData} />
-  //         </a>
-  //       );
-  //     })}
-  //   </div>
-  // );
 }
 
 const SearchBar = ({
@@ -185,9 +226,17 @@ const SearchBar = ({
   loading: boolean;
   placeholder: string;
 }) => {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleSearchAndBlur = () => {
+    handleSearch();
+    inputRef.current?.blur();
+  };
+
   return (
     <div className="flex w-full max-w-xl gap-2">
       <input
+        ref={inputRef}
         type="text"
         placeholder={placeholder}
         value={query}
@@ -195,12 +244,12 @@ const SearchBar = ({
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
-            handleSearch();
+            handleSearchAndBlur();
           }
         }}
       />
-      <Button disabled={loading} onClick={handleSearch}>
-        {loading ? "Searching..." : "Search"}
+      <Button disabled={loading} onClick={handleSearchAndBlur}>
+        {"Search"}
       </Button>
     </div>
   );

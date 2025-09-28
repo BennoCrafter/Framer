@@ -41,6 +41,24 @@ export default function IndexPage() {
 
         {/* Cards Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 w-full max-w-4xl">
+          {/* Album Poster Card */}
+          <Card className="rounded-2xl shadow-lg hover:shadow-xl transition">
+            <CardHeader className="flex items-center gap-3">
+              <Music className="w-8 h-8 text-yellow-600" />
+              <h3 className="text-xl font-semibold">Create Album Poster</h3>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Turn your favorite albums and tracks into stylish album posters.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild className="w-full">
+                <Link href="/search?type=album">Open Album Editor</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+
           {/* Movie Poster Card */}
           <Card className="rounded-2xl shadow-lg hover:shadow-xl transition">
             <CardHeader className="flex items-center gap-3">
@@ -55,25 +73,7 @@ export default function IndexPage() {
             </CardContent>
             <CardFooter>
               <Button asChild className="w-full">
-                <Link href="/search?type=movie">Start Movie Poster</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Music Poster Card */}
-          <Card className="rounded-2xl shadow-lg hover:shadow-xl transition">
-            <CardHeader className="flex items-center gap-3">
-              <Music className="w-8 h-8 text-yellow-600" />
-              <h3 className="text-xl font-semibold">Create Music Poster</h3>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Turn your favorite albums and tracks into stylish music posters.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button asChild className="w-full">
-                <Link href="/search?type=music">Start Music Poster</Link>
+                <Link href="/search?type=movie">Open Movie Editor</Link>
               </Button>
             </CardFooter>
           </Card>

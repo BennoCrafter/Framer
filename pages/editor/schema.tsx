@@ -1,6 +1,6 @@
-import { ConfigSchema } from "./types";
+import { ConfigSchema, ConfigValues, buildDefaults } from "./types";
 
-export const albumConfigSchema: ConfigSchema[] = [
+export const albumConfigSchema = [
   {
     key: "artistName",
     label: "Artist Name",
@@ -35,9 +35,16 @@ export const albumConfigSchema: ConfigSchema[] = [
     type: "color",
     default: "#ffffff",
   },
-];
+] as const satisfies ConfigSchema;
 
-export const movieConfigSchema: ConfigSchema[] = [
+export type AlbumConfig = ConfigValues<typeof albumConfigSchema>;
+
+export const albumConfigScheme = {
+  schema: albumConfigSchema,
+  default: buildDefaults(albumConfigSchema),
+};
+
+export const movieConfigSchema = [
   {
     key: "outerMargin",
     label: "Outer Margin Size",
@@ -46,4 +53,4 @@ export const movieConfigSchema: ConfigSchema[] = [
     max: 100,
     default: 10,
   },
-];
+] as const satisfies ConfigSchema;

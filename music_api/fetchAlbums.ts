@@ -8,10 +8,10 @@ export default async function fetchAlbums(
   token: string,
   query: string | null,
   limit: number,
-  offset: number,
+  url: URL | null | undefined,
+  loadMore: boolean,
   setAlbums: (albums: AlbumsSearch) => void,
   setLoading: (loading: boolean) => void,
-  setLoadingMore: (loadingMore: boolean) => void,
 ): Promise<void> {
   if (!token) return;
 
@@ -19,9 +19,15 @@ export default async function fetchAlbums(
 
   try {
     let response;
-    const currentOffset = offset;
+    const currentOffset = 0;
 
-    if (query) {
+    if (url && loadMore) {
+      response = await fetch(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } else if (query) {
       response = await fetch(
         `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album&limit=${limit}&offset=${currentOffset}`,
         {
@@ -48,12 +54,11 @@ export default async function fetchAlbums(
     }
 
     const data: SearchApiResponse = await response.json();
-
+    console.log(data.albums.next);
     setAlbums(data.albums);
   } catch (err) {
     console.error(err);
   } finally {
     setLoading(false);
-    setLoadingMore(false);
   }
 }

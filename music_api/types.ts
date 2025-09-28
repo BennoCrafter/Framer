@@ -104,7 +104,7 @@ export interface AlbumSearchItem {
 export interface AlbumsSearch {
   href: string;
   limit: number;
-  next: string | null;
+  next: URL | null;
   offset: number;
   previous: string | null;
   total: number;

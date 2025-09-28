@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/BennoCrafter/framr/refs/heads/main/public/icon.png" width="200" alt="framer Logo">
+  <img src="https://raw.githubusercontent.com/BennoCrafter/framr/refs/heads/main/public/icon.png" width="200" alt="framr Logo">
 </p>
 
 <div align="center">

@@ -21,7 +21,7 @@ export const Navbar = () => {
         <NavbarBrand className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
             <Logo />
-            <p className="font-bold text-inherit">framer</p>
+            <p className="font-bold text-inherit">framr</p>
           </NextLink>
         </NavbarBrand>
       </NavbarContent>

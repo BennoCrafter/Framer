@@ -4,7 +4,7 @@ import { button as buttonStyles } from "@heroui/theme";
 import { title, subtitle } from "@/components/primitives";
 import DefaultLayout from "@/layouts/default";
 
-export function WrongPage() {
+export default function WrongPage() {
   return (
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center gap-6 py-8 md:py-10">

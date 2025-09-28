@@ -9,7 +9,7 @@ import { title } from "@/components/primitives";
 import fetchAlbums from "@/music_api/fetchAlbums";
 import { fetchAccessToken } from "@/music_api/fetchAccessToken";
 import artistsToString, { AlbumSearchItem } from "@/music_api/types";
-import { WrongPage } from "@/pages/wrong_page";
+import WrongPage from "@/pages/wrong_page";
 import EditorLayout from "@/layouts/editor";
 
 interface SearchResultCardData {

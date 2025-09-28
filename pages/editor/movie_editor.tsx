@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
 
-import { BaseEditor } from "./base_editor";
+import BaseEditor from "./base_editor";
 
 import {
   MovieConfig,
   movieConfigSchema,
   movieConfigScheme,
-} from "@/pages/editor/schema";
-import { ConfigValue } from "@/pages/editor/types";
+} from "@/lib/schema";
+import { ConfigValue } from "@/lib/types";
 
-export function MovieEditor() {
+export default function MovieEditor() {
   const [config, setConfig] = useState<MovieConfig>({
     ...movieConfigScheme.default,
   });

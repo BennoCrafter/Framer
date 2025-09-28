@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import EditorLayout from "@/layouts/editor";
-import { ConfigSchema, ConfigValues } from "@/pages/editor/types";
+import { ConfigSchema, ConfigValues } from "@/lib/types";
 import {
   Choicebox,
   ChoiceboxItem,
@@ -31,7 +31,7 @@ type BaseEditorProps<T extends ConfigSchema> = {
   handleExportPdf: () => void;
 };
 
-export function BaseEditor<T extends ConfigSchema>({
+export default function BaseEditor<T extends ConfigSchema>({
   configSchema,
   config,
   updateConfig,
@@ -43,7 +43,7 @@ export function BaseEditor<T extends ConfigSchema>({
       <div className="grid grid-cols-3 gap-6 p-6">
         <Card className="col-span-1">
           <CardContent className="flex flex-col gap-6 p-6">
-            {configSchema.map((c) => {
+            {configSchema?.map((c) => {
               if (c.type === "text") {
                 return (
                   <div key={c.key} className="flex flex-col gap-2">
@@ -131,7 +131,7 @@ export function BaseEditor<T extends ConfigSchema>({
                             )
                           }
                         >
-                          {c.options.map((option) => (
+                          {c.options?.map((option) => (
                             <ChoiceboxItem key={option.id} value={option.id}>
                               <ChoiceboxItemHeader>
                                 <ChoiceboxItemTitle>

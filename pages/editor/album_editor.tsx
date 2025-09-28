@@ -1,22 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
 
-import { ConfigValue } from "@/pages/editor/types";
+import { ConfigValue } from "@/lib/types";
 import {
   albumConfigSchema,
   AlbumConfig,
   albumConfigScheme,
-} from "@/pages/editor/schema";
+} from "@/lib/schema";
 import artistsToString, { Album, Track, Artist } from "@/music_api/types";
 import { fetchAccessToken } from "@/music_api/fetchAccessToken";
 import fetchAlbumInfo from "@/music_api/fetchAlbumInfo";
-import { BaseEditor } from "./base_editor";
+import BaseEditor from "./base_editor";
 import { hexToRgb } from "@/lib/utils";
 
-export function AlbumEditor({ albumId }: { albumId: string }) {
-  const [config, setConfig] = useState<AlbumConfig>({
-    ...albumConfigScheme.default,
-  });
+export default function AlbumEditor({ albumId }: { albumId: string }) {
+  const [config, setConfig] = useState<AlbumConfig>(albumConfigScheme.default);
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

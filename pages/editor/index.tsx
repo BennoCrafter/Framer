@@ -1,6 +1,7 @@
 import { useSearchParams } from "next/navigation";
 import { MovieEditor } from "./movie_editor";
 import { AlbumEditor } from "./album_editor";
+import { WrongPage } from "../wrong_page";
 
 export default function Editor() {
   const searchParams = useSearchParams();
@@ -14,5 +15,5 @@ export default function Editor() {
     return <AlbumEditor albumId={albumId} />;
   }
 
-  return <div>No editor type provided.</div>;
+  return <WrongPage />;
 }

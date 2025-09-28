@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, redirect } from "next/navigation";
 import { Film, Music } from "lucide-react";
+import { button as buttonStyles } from "@heroui/theme";
 
-import DefaultLayout from "@/layouts/default";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { title } from "@/components/primitives";
 import fetchAlbums from "@/music_api/fetchAlbums";
 import { fetchAccessToken } from "@/music_api/fetchAccessToken";
 import artistsToString, { AlbumSearchItem } from "@/music_api/types";
+import { WrongPage } from "@/pages/wrong_page";
+import EditorLayout from "@/layouts/editor";
 
 interface SearchResultCardData {
   id: string;
@@ -21,43 +23,34 @@ export default function Search() {
   const searchParams = useSearchParams();
   const type = searchParams?.get("type") || "";
 
+  if (type !== "movie" && type !== "album") {
+    return <WrongPage />;
+  }
+
   return (
-    <DefaultLayout>
-      <section className="flex flex-col items-center justify-center gap-6 py-8 md:py-10">
-        <div className="inline-block max-w-xl text-center">
+    <EditorLayout>
+      <section className="flex flex-col items-center justify-center gap-6 py-10">
+        <div className="max-w-xl text-center">
           <p className={title()}>
-            Search for{" "}
             {type === "movie" ? (
-              <>
-                <Film className="inline-block h-5 w-5" /> movies
-              </>
-            ) : type === "music" ? (
-              <>
-                <Music className="inline-block h-5 w-5" /> songs
-              </>
+              <span className="inline-flex items-center gap-2">
+                <Film className="h-10 w-10 text-blue-500" />
+                movies
+              </span>
+            ) : type === "album" ? (
+              <span className="inline-flex items-center gap-2">
+                <Music className="h-10 w-10 text-pink-500" />
+                albums
+              </span>
             ) : (
-              "anything"
+              <span className="text-gray-600 font-medium">anything</span>
             )}
           </p>
         </div>
 
-        {type === "movie" ? (
-          <SearchMovies />
-        ) : type === "album" ? (
-          <SearchMusic />
-        ) : (
-          <WrongSearch />
-        )}
+        {type === "movie" ? <SearchMovies /> : <SearchMusic />}
       </section>
-    </DefaultLayout>
-  );
-}
-
-function WrongSearch() {
-  return (
-    <>
-      <Button>Go back to home</Button>
-    </>
+    </EditorLayout>
   );
 }
 
@@ -131,9 +124,10 @@ function SearchMusic() {
         placeholder="Search for albums..."
       />
       <ResultGrid results={results} />
+
       <button
+        className={buttonStyles({ variant: "bordered", size: "lg" })}
         disabled={loading || nextLoadingLink === null}
-        className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition"
         onClick={() => handleSearch(true)}
       >
         {loading ? "Loading..." : "Load More"}

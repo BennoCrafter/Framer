@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import jsPDF from "jspdf";
-import DefaultLayout from "@/layouts/default";
+import EditorLayout from "@/layouts/editor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -66,7 +66,7 @@ export default function Editor() {
   };
 
   return (
-    <DefaultLayout>
+    <EditorLayout>
       <div className="grid grid-cols-3 gap-6 p-6">
         <Card className="col-span-1">
           <CardContent className="flex flex-col gap-4 p-4">
@@ -104,7 +104,7 @@ export default function Editor() {
           </CardContent>
         </Card>
 
-        <div className="col-span-2 flex items-center justify-center bg-gray-100 rounded-xl">
+        <div className="col-span-2 flex items-center justify-center rounded-xs">
           {imageUrl && (
             <img
               alt="PDF Preview"
@@ -119,6 +119,6 @@ export default function Editor() {
           )}
         </div>
       </div>
-    </DefaultLayout>
+    </EditorLayout>
   );
 }

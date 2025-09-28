@@ -1,16 +1,11 @@
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
-  NavbarMenu,
   NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
-  NavbarMenuItem,
 } from "@heroui/navbar";
-import { Button } from "@heroui/button";
-import { Kbd } from "@heroui/kbd";
 import { Link } from "@heroui/link";
-import { Input } from "@heroui/input";
 import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
@@ -26,7 +21,7 @@ export const Navbar = () => {
         <NavbarBrand className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
             <Logo />
-            <p className="font-bold text-inherit">framer</p>
+            <p className="font-bold text-inherit">framr</p>
           </NextLink>
         </NavbarBrand>
       </NavbarContent>

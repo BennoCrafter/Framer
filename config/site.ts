@@ -1,7 +1,7 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Framer",
+  name: "Framr",
   description:
     "Transform your favourite albums, movies & series into stunning posters—perfect for upgrading your room.",
   navItems: [
@@ -20,6 +20,6 @@ export const siteConfig = {
   ],
   navMenuItems: [],
   links: {
-    github: "https://github.com/BennoCrafter/Framer",
+    github: "https://github.com/BennoCrafter/Framr",
   },
 };

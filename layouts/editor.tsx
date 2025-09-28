@@ -3,11 +3,11 @@ import { button as buttonStyles } from "@heroui/theme";
 
 import { Head } from "./head";
 
-import { siteConfig } from "@/config/site";
 import { Navbar } from "@/components/navbar";
 import { GithubIcon } from "@/components/icons";
+import { siteConfig } from "@/config/site";
 
-export default function DefaultLayout({
+export default function EditorLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export default function DefaultLayout({
     <div className="relative flex flex-col h-screen">
       <Head />
       <Navbar />
-      <main className="container mx-auto max-w-7xl px-6 flex-grow pt-16">
+      <main className="container mx-auto max-w-7xl px-6 flex-grow pt-0">
         {children}
       </main>
       <footer className="w-full flex items-center justify-center py-3">

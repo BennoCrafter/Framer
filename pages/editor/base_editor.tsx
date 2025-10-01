@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
+import { FileIcon } from "lucide-react";
 type BaseEditorProps<T extends ConfigSchema> = {
   configSchema: T;
   config: ConfigValues<T>;
@@ -149,6 +149,46 @@ export default function BaseEditor<T extends ConfigSchema>({
                         </Choicebox>
                       </PopoverContent>
                     </Popover>
+                  </div>
+                );
+              }
+
+              if (c.type === "file") {
+                return (
+                  <div key={c.key} className="flex flex-col gap-2">
+                    <label className="text-sm font-medium">{c.label}</label>
+
+                    <label className="flex items-center gap-2 p-1 rounded-md bg-gray-100 cursor-pointer hover:bg-gray-200 transition">
+                      <FileIcon className="w-5 h-5 text-gray-700" />
+                      <span className="font-medium text-gray-800">
+                        {typeof config[c.key] === "string" &&
+                        config[c.key].startsWith("data:")
+                          ? "Uploaded"
+                          : "Original"}
+                      </span>
+
+                      <input
+                        type="file"
+                        accept={c.accept}
+                        className="hidden"
+                        onChange={(e) => {
+                          console.log(config[c.key]);
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const base64String = reader.result as string;
+                              updateConfig(
+                                c.key,
+                                base64String as ConfigValues<T>[keyof ConfigValues<T>],
+                              );
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                          console.log(config[c.key]);
+                        }}
+                      />
+                    </label>
                   </div>
                 );
               }

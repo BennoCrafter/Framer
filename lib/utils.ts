@@ -10,3 +10,17 @@ export const hexToRgb = (hex: string): [number, number, number] => {
 
   return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
 };
+
+export const imageToBase64 = async (
+  imageUrl: string | URL,
+): Promise<string> => {
+  const response = await fetch(imageUrl);
+  const buffer = await response.arrayBuffer();
+  const base64String = btoa(
+    new Uint8Array(buffer).reduce(
+      (data, byte) => data + String.fromCharCode(byte),
+      "",
+    ),
+  );
+  return base64String;
+};

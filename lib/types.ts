@@ -1,5 +1,5 @@
 // ---------- Schema definitions ----------
-export type ConfigValue = string | number;
+export type ConfigValue = string | number | null;
 
 interface BaseField<T extends ConfigValue> {
   key: string;
@@ -27,13 +27,23 @@ export interface ChoiceField extends BaseField<string> {
   inline?: boolean;
 }
 
+export interface FileField extends BaseField<string | null> {
+  type: "file";
+  accept?: string; // Optional: specify accepted file types (e.g., "image/*", ".pdf")
+}
+
 interface ChoiceOption {
   id: string;
   label: string;
   description?: string;
 }
 
-export type ConfigField = TextField | ColorField | SliderField | ChoiceField;
+export type ConfigField =
+  | TextField
+  | ColorField
+  | SliderField
+  | ChoiceField
+  | FileField;
 export type ConfigSchema = ConfigField[];
 
 // ---------- Values derived from schema ----------
@@ -45,7 +55,9 @@ export type ConfigValues<T extends ConfigSchema> = {
     ? string
     : Extract<T[number], { key: K }>["default"] extends number
       ? number
-      : never;
+      : Extract<T[number], { key: K }>["default"] extends null
+        ? string | null // File fields can be null initially
+        : never;
 };
 
 // ---------- Helper ----------

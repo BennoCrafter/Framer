@@ -27,13 +27,20 @@ export const albumConfigSchema = [
     type: "slider",
     min: 0,
     max: 100,
-    default: 10,
+    default: 50,
   },
   {
     key: "bgColor",
     label: "Background Color",
     type: "color",
     default: "#ffffff",
+  },
+  {
+    key: "albumCover",
+    label: "Cover",
+    type: "file",
+    default: null,
+    accept: "image/jpeg, image/png",
   },
 ] as const satisfies ConfigSchema;
 
@@ -43,8 +50,8 @@ export const movieConfigSchema = [
     label: "Outer Margin Size",
     type: "slider",
     min: 0,
-    max: 100,
-    default: 10,
+    max: 20,
+    default: 100,
   },
   {
     key: "posterOrientation",
@@ -64,6 +71,12 @@ export const movieConfigSchema = [
     ],
     inline: false,
     default: "portrait",
+  },
+  {
+    key: "moviePoster",
+    label: "Movie Poster",
+    type: "file",
+    default: null,
   },
 ] as const satisfies ConfigSchema;
 

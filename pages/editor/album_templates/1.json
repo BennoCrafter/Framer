@@ -1,0 +1,14 @@
+[
+  {
+    "type": "text",
+    "label": "Album Name",
+    "id": "album_name",
+    "font": "Arial",
+    "font-size": "24px",
+    "font-weight": "bold",
+    "color": "#000000",
+    "text-align": "center",
+    "x": 100,
+    "y": 50
+  }
+]

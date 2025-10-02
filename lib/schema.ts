@@ -19,7 +19,7 @@ export const albumConfigSchema = [
     type: "slider",
     min: 20,
     max: 100,
-    default: 40,
+    default: 55,
   },
   {
     key: "outerMargin",

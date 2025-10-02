@@ -7,13 +7,15 @@ import {
   AlbumConfig,
   albumConfigScheme,
 } from "@/lib/schema";
-import { hexToRgb } from "@/lib/utils";
+import { hexToRgb, getPaletteFromImage } from "@/lib/utils";
 import artistsToString from "@/music_api/types";
 import { fetchAccessToken } from "@/music_api/fetchAccessToken";
 import fetchAlbumInfo from "@/music_api/fetchAlbumInfo";
 import BaseEditor from "./base_editor";
 import { Album } from "@/music_api/types";
 import { getItunesUncompressedAlbumCover } from "@/music_api/getUncompressedAlbumCover";
+import { robotoBoldBold } from "@/fonts/Roboto-Bold-bold";
+import { robotoMediumNormalfont } from "@/fonts/Roboto-Medium-normal";
 
 const formats = ["a0", "a1", "a2", "a3", "a4"] as const;
 
@@ -28,9 +30,11 @@ type PosterTemplateName = "classic" | "minimal" | "modern";
 type PosterTemplateFn = (
   doc: jsPDF,
   config: AlbumConfig,
+  album: Album,
   pageWidth: number,
   pageHeight: number,
   scale: number,
+  isPreview: boolean,
 ) => void;
 
 function calculateScaleFactor(fmt: Format): number {
@@ -54,44 +58,160 @@ function getDimensions(
 
 // ===== Poster Templates =====
 const posterTemplates: Record<PosterTemplateName, PosterTemplateFn> = {
-  classic: (doc, config, pageWidth, pageHeight, scale) => {
+  classic: async (
+    doc,
+    config,
+    album,
+    pageWidth,
+    pageHeight,
+    scale,
+    isPreview,
+  ) => {
     const outerMargin = (config.outerMargin as number) * scale;
+    const fontSize = (config.fontSize as number) * scale;
 
-    // Draw outer border
-    doc.setDrawColor(0, 0, 0);
-    doc.rect(
-      outerMargin,
-      outerMargin,
-      pageWidth - 2 * outerMargin,
-      pageHeight - 2 * outerMargin,
-    );
+    const scaled = (value: number) => value * scale;
+
+    doc.setFont("Roboto-Bold", "bold");
+
+    // Draw outer border (preview mode)
+    // if (isPreview) {
+    //   doc.setDrawColor(0, 0, 0);
+    //   doc.rect(
+    //     outerMargin,
+    //     outerMargin,
+    //     pageWidth - 2 * outerMargin,
+    //     pageHeight - 2 * outerMargin,
+    //   );
+    // }
 
     // Draw album cover
     doc.addImage(
       config.albumCover as string,
-      outerMargin, // x
-      outerMargin, // y
-      pageWidth - 2 * outerMargin, // width
-      pageWidth - 2 * outerMargin, // height
+      outerMargin,
+      outerMargin,
+      pageWidth - 2 * outerMargin,
+      pageWidth - 2 * outerMargin,
     );
 
-    doc.setFontSize((config.fontSize as number) * scale);
+    // Divider line
+    doc.setDrawColor(0, 0, 0);
+    doc.line(
+      outerMargin,
+      pageWidth - outerMargin + scaled(70),
+      pageWidth - outerMargin,
+      pageWidth - outerMargin + scaled(70),
+    );
+
+    // Album name
+    doc.setFont("Roboto-Bold", "bold");
+    doc.setFontSize(fontSize);
+    doc.text(
+      config.albumName as string,
+      pageWidth - outerMargin - scaled(5),
+      pageHeight - 2 * outerMargin - scaled(160),
+      { align: "right" },
+    );
+
+    // Artist name (bottom)
+    doc.setFont("Roboto-Medium", "normal");
+    doc.setFontSize(fontSize - scaled(2));
     doc.text(
       config.artistName as string,
-      pageWidth / 2,
-      outerMargin + 40 * scale,
-      {
-        align: "center",
-      },
+      pageWidth - outerMargin - scaled(5),
+      pageHeight - 2 * outerMargin - scaled(135),
+      { align: "right" },
     );
 
-    doc.setFontSize((config.fontSize as number) * 0.6 * scale);
-    doc.text(config.albumName as string, pageWidth / 2, pageHeight / 2, {
-      align: "center",
+    let colorPalette: string[] =
+      (await getPaletteFromImage(config.albumCover as string)) || [];
+
+    // Color swatches
+    const swatchHeight = scaled(20);
+    const swatchWidth = scaled(40);
+    const swatchSpacing = scaled(0);
+    const swatchYPosition =
+      pageHeight - 2 * outerMargin - swatchHeight - scaled(90);
+
+    colorPalette.forEach((color, i) => {
+      const [r, g, b] = hexToRgb(color);
+      doc.setFillColor(r, g, b);
+      doc.rect(
+        pageWidth - 2 * outerMargin - i * swatchWidth - i * swatchSpacing,
+        swatchYPosition,
+        swatchWidth,
+        swatchHeight,
+        "F",
+      );
+    });
+
+    // Release date
+    doc.setFont("Roboto-Bold", "bold");
+    doc.setFontSize(fontSize - scaled(10));
+    doc.text(
+      "Release Date",
+      pageWidth - outerMargin - scaled(5),
+      pageHeight - outerMargin - scaled(110),
+      { align: "right" },
+    );
+
+    doc.setFont("Roboto-Medium", "normal");
+    doc.setFontSize(fontSize - scaled(10));
+    doc.text(
+      album.release_date as string,
+      pageWidth - outerMargin - scaled(5),
+      pageHeight - outerMargin - scaled(90),
+      { align: "right" },
+    );
+
+    // Release label
+    doc.setFont("Roboto-Bold", "bold");
+    doc.setFontSize(fontSize - scaled(10));
+    doc.text(
+      "Release By",
+      pageWidth - outerMargin - scaled(5),
+      pageHeight - outerMargin - scaled(65),
+      { align: "right" },
+    );
+
+    doc.setFont("Roboto-Medium", "normal");
+    doc.setFontSize(fontSize - scaled(10));
+    doc.text(
+      album.label as string,
+      pageWidth - outerMargin - scaled(5),
+      pageHeight - outerMargin - scaled(45),
+      { align: "right" },
+    );
+
+    // --- Tracks section ---
+    const maxTracksPerColumn = 11;
+    const trackListY = pageHeight - 2 * outerMargin - scaled(160);
+    const trackSpacing = scaled(20);
+    const trackXStart = outerMargin;
+
+    // Base font
+    doc.setFont("Roboto-Medium", "normal");
+    let trackFontSize = fontSize - scaled(10);
+
+    doc.setFontSize(trackFontSize);
+
+    if (album.total_tracks > maxTracksPerColumn) {
+      trackFontSize = fontSize - scaled(20);
+      doc.setFontSize(trackFontSize);
+    }
+
+    album.tracks.items.forEach((track, index) => {
+      const columnIndex = Math.floor(index / maxTracksPerColumn);
+      const rowIndex = index % maxTracksPerColumn;
+
+      const x = trackXStart + columnIndex * scaled(320); // spacing between columns
+      const y = trackListY + rowIndex * trackSpacing;
+
+      doc.text(`${index + 1}. ${track.name}`, x, y, { align: "left" });
     });
   },
 
-  minimal: (doc, config, pageWidth, pageHeight, scale) => {
+  minimal: (doc, config, album, pageWidth, pageHeight, scale, isPreview) => {
     doc.setFontSize((config.fontSize as number) * scale);
     doc.text(
       config.artistName as string,
@@ -101,13 +221,13 @@ const posterTemplates: Record<PosterTemplateName, PosterTemplateFn> = {
     );
     doc.text(
       config.albumName as string,
-      pageWidth / 2,
+      (pageWidth / 2) * scale,
       pageHeight / 2 + 20 * scale,
       { align: "center" },
     );
   },
 
-  modern: (doc, config, pageWidth, pageHeight, scale) => {
+  modern: (doc, config, album, pageWidth, pageHeight, scale, isPreview) => {
     doc.addImage(
       config.albumCover as string,
       pageWidth / 4,
@@ -172,12 +292,15 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
   }, [albumId]);
 
   useEffect(() => {
-    if (!loading)
-      generatePoster(template, {
-        size: "a0",
-        orientation: "portrait",
-        format: "pdf",
-      });
+    if (!loading) {
+      (async () => {
+        pdfDocRef.current = await generatePoster(template, {
+          size: "a0",
+          orientation: "portrait",
+          format: "pdf",
+        });
+      })();
+    }
   }, [config, template, loading]);
 
   const updateConfig = async (key: keyof AlbumConfig, value: ConfigValue) => {
@@ -215,12 +338,22 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
     }
   };
 
-  const generatePoster = (tpl: PosterTemplateName, options: ExportOptions) => {
+  async function generatePoster(
+    tpl: PosterTemplateName,
+    options: ExportOptions,
+    isPreview: boolean = true,
+  ) {
     const doc = new jsPDF({
       orientation: options.orientation,
       unit: "mm",
       format: options.size,
     });
+
+    doc.addFileToVFS("Roboto-Bold-bold.ttf", robotoBoldBold);
+    doc.addFont("Roboto-Bold-bold.ttf", "Roboto-Bold", "bold");
+
+    doc.addFileToVFS("Roboto-Medium-normal.ttf", robotoMediumNormalfont);
+    doc.addFont("Roboto-Medium-normal.ttf", "Roboto-Medium", "normal");
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -231,30 +364,36 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
 
     const templateFn = posterTemplates[tpl] ?? posterTemplates.classic;
 
-    templateFn(
+    if (!album) {
+      throw new Error("Album is required");
+    }
+
+    await templateFn(
       doc,
       config,
+      album,
       pageWidth,
       pageHeight,
       calculateScaleFactor(options.size),
+      isPreview,
     );
+
     setImageUrl(doc.output("datauristring"));
-    pdfDocRef.current = doc;
 
     return doc;
-  };
+  }
 
-  const handleExportPoster = (options: ExportOptions) => {
-    if (!pdfDocRef.current) return;
-
+  const handleExportPoster = async (options: ExportOptions) => {
     console.log("Exporting poster in ", options);
+    const pdfGeneratedPosterPdf = await generatePoster(
+      template,
+      options,
+      false,
+    );
 
     if (options.format === "pdf") {
-      let pdfGeneratedPosterPdf = generatePoster(template, options);
-
       pdfGeneratedPosterPdf.save(`album-poster-${options.size}.pdf`);
     } else if (options.format === "png") {
-      let pdfGeneratedPosterPdf = pdfDocRef.current;
       const pageWidth = pdfGeneratedPosterPdf.internal.pageSize.getWidth();
       const pageHeight = pdfGeneratedPosterPdf.internal.pageSize.getHeight();
 
@@ -297,8 +436,8 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
         {Object.keys(posterTemplates).map((tpl) => (
           <button
             key={tpl}
-            onClick={() => setTemplate(tpl as PosterTemplateName)}
             className={template === tpl ? "font-bold" : ""}
+            onClick={() => setTemplate(tpl as PosterTemplateName)}
           >
             {tpl.charAt(0).toUpperCase() + tpl.slice(1)}
           </button>

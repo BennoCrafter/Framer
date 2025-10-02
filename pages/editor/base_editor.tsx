@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileIcon, DownloadIcon, RefreshCw } from "lucide-react";
+import { FileIcon, DownloadIcon, RefreshCw, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ExportOptions } from "@/lib/types";
-
+import { Checkbox } from "@/components/ui/checkbox";
 // --------------------------------------------
 // Reusable ConfigField Component
 // --------------------------------------------
@@ -94,7 +94,7 @@ function ConfigField<T extends ConfigSchema>({
           <SelectContent>
             <SelectGroup>
               <SelectLabel>{schema.label}</SelectLabel>
-              {schema.options?.map((option) => (
+              {schema.options?.map((option: any) => (
                 <SelectItem key={option.id} value={option.id}>
                   {option.label}
                 </SelectItem>
@@ -131,6 +131,16 @@ function ConfigField<T extends ConfigSchema>({
           />
         </label>
       )}
+
+      {schema.type === "toggle" && (
+        <div className="flex items-center justify-between">
+          <Checkbox
+            id={schema.key}
+            checked={value}
+            onCheckedChange={(checked) => onChange(checked)}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -161,7 +171,7 @@ export default function BaseEditor<T extends ConfigSchema>({
       <div className="grid grid-cols-3 gap-6 p-6">
         <Card className="col-span-1">
           <CardContent className="flex flex-col gap-6 p-6">
-            {configSchema.map((schema) => (
+            {configSchema.map((schema: any) => (
               <ConfigField
                 key={schema.key}
                 schema={schema}
@@ -212,6 +222,7 @@ const ExportDialog = ({
     size: "a0",
     orientation: "portrait",
     format: "pdf",
+    dpi: 300,
   });
 
   return (
@@ -271,6 +282,29 @@ const ExportDialog = ({
               </Select>
             </div>
           ))}
+
+          {exportOptions.format === "png" && (
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="dpi">
+                DPI
+              </label>
+              <Slider
+                min={100}
+                max={600}
+                step={50}
+                value={[exportOptions.dpi || 300]}
+                onValueChange={(value) =>
+                  setExportOptions((prev) => ({
+                    ...prev,
+                    dpi: value[0],
+                  }))
+                }
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                {exportOptions.dpi} DPI
+              </p>
+            </div>
+          )}
 
           <Button
             className="w-full"

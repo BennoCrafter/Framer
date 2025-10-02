@@ -36,6 +36,12 @@ export const albumConfigSchema = [
     default: "#ffffff",
   },
   {
+    key: "useHighResCover",
+    label: "Use High-Resolution Cover",
+    type: "toggle",
+    default: false,
+  },
+  {
     key: "albumCover",
     label: "Cover",
     type: "file",

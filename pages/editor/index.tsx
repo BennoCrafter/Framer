@@ -5,8 +5,8 @@ import WrongPage from "../wrong_page";
 
 export default function Editor() {
   const searchParams = useSearchParams();
-  const type = searchParams?.get("type") || "";
-  const albumId = searchParams?.get("albumId") || null;
+  const type = searchParams?.get("type");
+  const albumId = searchParams?.get("albumId");
 
   if (type === "movie") {
     return <MovieEditor />;

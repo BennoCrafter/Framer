@@ -12,6 +12,8 @@ import artistsToString from "@/music_api/types";
 import { fetchAccessToken } from "@/music_api/fetchAccessToken";
 import fetchAlbumInfo from "@/music_api/fetchAlbumInfo";
 import BaseEditor from "./base_editor";
+import { Album } from "@/music_api/types";
+import { getItunesUncompressedAlbumCover } from "@/music_api/getUncompressedAlbumCover";
 
 const formats = ["a0", "a1", "a2", "a3", "a4"] as const;
 
@@ -53,23 +55,35 @@ function getDimensions(
 // ===== Poster Templates =====
 const posterTemplates: Record<PosterTemplateName, PosterTemplateFn> = {
   classic: (doc, config, pageWidth, pageHeight, scale) => {
-    const margin = (config.outerMargin as number) * scale;
+    const outerMargin = (config.outerMargin as number) * scale;
 
+    // Draw outer border
     doc.setDrawColor(0, 0, 0);
-    doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
+    doc.rect(
+      outerMargin,
+      outerMargin,
+      pageWidth - 2 * outerMargin,
+      pageHeight - 2 * outerMargin,
+    );
 
+    // Draw album cover
     doc.addImage(
       config.albumCover as string,
-      margin, // x
-      margin + 20 * scale, // y
-      pageWidth - 2 * margin, // width
-      pageWidth - 2 * margin, // height
+      outerMargin, // x
+      outerMargin, // y
+      pageWidth - 2 * outerMargin, // width
+      pageWidth - 2 * outerMargin, // height
     );
 
     doc.setFontSize((config.fontSize as number) * scale);
-    doc.text(config.artistName as string, pageWidth / 2, margin + 40 * scale, {
-      align: "center",
-    });
+    doc.text(
+      config.artistName as string,
+      pageWidth / 2,
+      outerMargin + 40 * scale,
+      {
+        align: "center",
+      },
+    );
 
     doc.setFontSize((config.fontSize as number) * 0.6 * scale);
     doc.text(config.albumName as string, pageWidth / 2, pageHeight / 2, {
@@ -127,6 +141,7 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [template, setTemplate] = useState<PosterTemplateName>("classic");
+  const [album, setAlbum] = useState<Album | undefined>(undefined);
 
   const pdfDocRef = useRef<jsPDF | null>(null);
 
@@ -140,6 +155,8 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
       const data = await fetchAlbumInfo(accessToken, albumId, setLoading);
 
       if (!data) return;
+
+      setAlbum(data);
 
       setConfig((prevConfig) => ({
         ...prevConfig,
@@ -163,8 +180,39 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
       });
   }, [config, template, loading]);
 
-  const updateConfig = (key: keyof AlbumConfig, value: ConfigValue) => {
+  const updateConfig = async (key: keyof AlbumConfig, value: ConfigValue) => {
+    console.log("Updating config:", key, value);
     setConfig((prevConfig) => ({ ...prevConfig, [key]: value }));
+
+    // special handling
+    // change cover to high res
+    if (key === "useHighResCover") {
+      if (value === true) {
+        setLoading(true);
+        const highResCover = await getItunesUncompressedAlbumCover(
+          `${config.albumName} ${config.artistName}`,
+        );
+
+        if (highResCover) {
+          setConfig((prevConfig) => ({
+            ...prevConfig,
+            albumCover: highResCover.toString(),
+          }));
+          setLoading(false);
+        } else {
+          console.log("No high res cover found");
+          setConfig((prevConfig) => ({
+            ...prevConfig,
+            useHighResCover: false,
+          }));
+        }
+      } else {
+        setConfig((prevConfig) => ({
+          ...prevConfig,
+          albumCover: album?.images?.[0]?.url || "",
+        }));
+      }
+    }
   };
 
   const generatePoster = (tpl: PosterTemplateName, options: ExportOptions) => {
@@ -198,6 +246,7 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
 
   const handleExportPoster = (options: ExportOptions) => {
     if (!pdfDocRef.current) return;
+
     console.log("Exporting poster in ", options);
 
     if (options.format === "pdf") {
@@ -206,27 +255,27 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
       pdfGeneratedPosterPdf.save(`album-poster-${options.size}.pdf`);
     } else if (options.format === "png") {
       let pdfGeneratedPosterPdf = pdfDocRef.current;
-      const scale = 8; // 8x for ultra-high DPI (~576 DPI if PDF is 72 DPI)
       const pageWidth = pdfGeneratedPosterPdf.internal.pageSize.getWidth();
       const pageHeight = pdfGeneratedPosterPdf.internal.pageSize.getHeight();
 
-      // Create a high-res canvas
+      const dpiCalc = options.dpi || 300;
+      const resolutionMultiplier = dpiCalc / 72;
+      const canvasWidth = pageWidth * resolutionMultiplier;
+      const canvasHeight = pageHeight * resolutionMultiplier;
+
       const canvas = document.createElement("canvas");
 
-      canvas.width = pageWidth * scale;
-      canvas.height = pageHeight * scale;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       const ctx = canvas.getContext("2d")!;
 
-      // Scale context to achieve high DPI
-      ctx.scale(scale, scale);
-
-      // Draw the poster as an image from jsPDF
       const imgData = pdfGeneratedPosterPdf.output("datauristring");
       const image = new Image();
 
       image.src = imgData;
 
       image.onload = () => {
+        ctx.scale(resolutionMultiplier, resolutionMultiplier);
         ctx.drawImage(image, 0, 0, pageWidth, pageHeight);
 
         canvas.toBlob((blob) => {
@@ -234,7 +283,7 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
           const link = document.createElement("a");
 
           link.href = URL.createObjectURL(blob);
-          link.download = `album-poster-${options.size}-highdpi.png`;
+          link.download = `album-poster-${options.size}-${dpiCalc}dpi.png`;
           link.click();
           URL.revokeObjectURL(link.href);
         }, "image/png");
@@ -256,19 +305,13 @@ export default function AlbumEditor({ albumId }: { albumId: string }) {
         ))}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center h-full">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900"></div>
-        </div>
-      ) : (
-        <BaseEditor
-          configSchema={albumConfigSchema}
-          config={config}
-          updateConfig={updateConfig}
-          previewImageURL={imageUrl || ""}
-          handleExportPoster={handleExportPoster}
-        />
-      )}
+      <BaseEditor
+        configSchema={albumConfigSchema}
+        config={config}
+        updateConfig={updateConfig}
+        previewImageURL={imageUrl || ""}
+        handleExportPoster={handleExportPoster}
+      />
     </>
   );
 }

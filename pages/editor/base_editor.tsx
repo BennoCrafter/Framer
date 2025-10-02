@@ -1,10 +1,9 @@
 import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import EditorLayout from "@/layouts/editor";
-import { ConfigSchema, ConfigValues } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -14,7 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileIcon, DownloadIcon, RefreshCw, Check } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+
+import { FileIcon, DownloadIcon, RefreshCw } from "lucide-react";
+
+import EditorLayout from "@/layouts/editor";
+import { ConfigSchema, ConfigValues, ExportOptions } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +26,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ExportOptions } from "@/lib/types";
-import { Checkbox } from "@/components/ui/checkbox";
+
 // --------------------------------------------
 // Reusable ConfigField Component
 // --------------------------------------------
@@ -94,11 +97,12 @@ function ConfigField<T extends ConfigSchema>({
           <SelectContent>
             <SelectGroup>
               <SelectLabel>{schema.label}</SelectLabel>
-              {schema.options?.map((option: any) => (
-                <SelectItem key={option.id} value={option.id}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              {Array.isArray(schema.options) &&
+                schema.options.map((option: any) => (
+                  <SelectItem key={option.id} value={option.id}>
+                    {option.label}
+                  </SelectItem>
+                ))}
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -171,7 +175,7 @@ export default function BaseEditor<T extends ConfigSchema>({
       <div className="grid grid-cols-3 gap-6 p-6">
         <Card className="col-span-1">
           <CardContent className="flex flex-col gap-6 p-6">
-            {configSchema.map((schema: any) => (
+            {configSchema?.map((schema: any) => (
               <ConfigField
                 key={schema.key}
                 schema={schema}

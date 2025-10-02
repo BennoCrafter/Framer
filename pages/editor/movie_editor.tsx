@@ -59,7 +59,7 @@ export default function MovieEditor() {
       config={config}
       updateConfig={updateConfig}
       previewImageURL={imageUrl || ""}
-      handleExportPdf={handleExportPdf}
+      handleExportPoster={handleExportPdf}
     />
   );
 }

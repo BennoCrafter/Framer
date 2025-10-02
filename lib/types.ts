@@ -21,9 +21,9 @@ export interface SliderField extends BaseField<number> {
   max: number;
 }
 
-export interface ChoiceField extends BaseField<string> {
-  type: "choice";
-  options: ChoiceOption[];
+export interface SelectField extends BaseField<string> {
+  type: "select";
+  options: SelectItem[];
   inline?: boolean;
 }
 
@@ -32,17 +32,17 @@ export interface FileField extends BaseField<string | null> {
   accept?: string; // Optional: specify accepted file types (e.g., "image/*", ".pdf")
 }
 
-interface ChoiceOption {
+interface SelectItem {
   id: string;
   label: string;
-  description?: string;
+  value: string;
 }
 
 export type ConfigField =
   | TextField
   | ColorField
   | SliderField
-  | ChoiceField
+  | SelectField
   | FileField;
 export type ConfigSchema = ConfigField[];
 
@@ -68,3 +68,9 @@ export function buildDefaults<T extends ConfigSchema>(
     schema.map((f) => [f.key, f.default]),
   ) as ConfigValues<T>;
 }
+
+export type ExportOptions = {
+  size: "a0" | "a1" | "a2" | "a3" | "a4";
+  orientation: "portrait" | "landscape";
+  format: "pdf" | "png";
+};

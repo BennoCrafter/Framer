@@ -5,13 +5,13 @@ export const albumConfigSchema = [
     key: "artistName",
     label: "Artist Name",
     type: "text",
-    default: "Artist name",
+    default: "",
   },
   {
     key: "albumName",
     label: "Album Name",
     type: "text",
-    default: "ALBUM NAME",
+    default: "",
   },
   {
     key: "fontSize",
@@ -39,7 +39,7 @@ export const albumConfigSchema = [
     key: "albumCover",
     label: "Cover",
     type: "file",
-    default: null,
+    default: "",
     accept: "image/jpeg, image/png",
   },
 ] as const satisfies ConfigSchema;
@@ -56,20 +56,19 @@ export const movieConfigSchema = [
   {
     key: "posterOrientation",
     label: "Poster Orientation",
-    type: "choice",
+    type: "select",
     options: [
       {
         id: "landscape",
         label: "Landscape",
-        description: "Landscape orientation",
+        value: "landscape",
       },
       {
         id: "portrait",
         label: "Portrait",
-        description: "Portrait orientation",
+        value: "portrait",
       },
     ],
-    inline: false,
     default: "portrait",
   },
   {

@@ -22,5 +22,6 @@ export const imageToBase64 = async (
       "",
     ),
   );
+
   return base64String;
 };
